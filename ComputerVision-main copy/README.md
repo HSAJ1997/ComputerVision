@@ -126,3 +126,59 @@ Smoke-tested on a few real batches, not a full epoch, end to end: loss came out 
 about 6.2, matching ln(500) which is about 6.21, exactly what an untrained, randomly
 initialized model should produce on 500 classes, confirming the data to model to loss
 to backward to optimizer pipeline works correctly.
+
+--Scratch/evaluate.py--
+
+Loads a trained checkpoint and reports final accuracy on the test set, kept separate
+from train.py since it is a one-off step, not part of the epoch loop.
+
+It builds the same model architecture, loads the saved weights from
+BEST_CHECKPOINT_PATH with model.load_state_dict(torch.load(...)), and moves the model
+onto the current device. It reuses validateOneEpoch from train.py rather than
+duplicating that logic, since scoring the test set is functionally identical to scoring
+the validation set during training: forward pass only, no gradient tracking, average
+loss and accuracy over the whole loader. The if __name__ == "__main__" block runs this
+once against the test loader and prints test loss and test accuracy.
+
+Smoke-tested against the full 5000-image test set using a dummy, untrained checkpoint
+(saved and deleted just for this test): test loss came out to about 6.21 and accuracy
+to about 0.002, both consistent with random guessing across 500 classes, confirming the
+checkpoint-load and evaluation path works correctly.
+
+--Next steps--
+
+Everything above is built and smoke-tested (a few batches, or one pass over real data),
+but no real training run has happened yet. There is no checkpoint in
+Scratch/checkpoints/ right now, that folder only appears once train.py actually runs.
+
+To pick this up, first make sure the images exist locally. The splits/*.csv files
+already list every image path, but the actual image files under subset/train_mini/ and
+subset/val/ are not committed to git (too large). Either copy the subset/ folder from a
+teammate who already has it, or run scripts/prepare_subset.py, which needs the raw
+train_mini.json, val.json, train_mini.tar.gz and val.tar.gz files present first.
+
+Then install dependencies with pip install -r requirements.txt (this pulls in torch and
+torchvision, a few hundred MB).
+
+From the project root, the intended run order is:
+
+python Scratch/dataset_loading.py, a quick check that the loaders work and print the
+expected batch shapes and counts.
+
+python Scratch/train.py, the real training run. Currently set to 30 epochs in
+config.py, prints train and validation loss and accuracy every epoch, and saves the
+best checkpoint to Scratch/checkpoints/resnet18_scratch_best.pth whenever validation
+accuracy improves. On a Mac, if num_workers 2 causes stalls or errors with the mps
+device, try setting NUM_WORKERS to 0 in config.py.
+
+python Scratch/evaluate.py, loads that best checkpoint and reports final loss and
+accuracy on the held-out test set.
+
+Things that are deliberately not done yet, left for whoever picks this up next: proper
+image preprocessing and augmentation (dataset_loading.py currently only resizes and
+converts to a tensor, no normalization, flips, or crops), hyperparameter tuning
+(NUM_EPOCHS, LEARNING_RATE, MOMENTUM and WEIGHT_DECAY in config.py are starting
+guesses, not tuned), and any deeper evaluation beyond overall accuracy (per-class
+accuracy, a confusion matrix, or plots, if the assignment wants that level of detail).
+Comparing these from-scratch results against the pretrained baseline in scripts/ is
+also still open.
