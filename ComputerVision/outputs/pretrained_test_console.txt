@@ -1,0 +1,6 @@
+Evaluating epoch 6 on 5000 test images.
+Processed batch 100/313
+Processed batch 200/313
+Processed batch 300/313
+Top-1: 43.70% | Top-5: 67.74% | Macro-F1: 0.4281
+Results saved in /Users/adnan/9517ass/ComputerVision-main/outputs.
