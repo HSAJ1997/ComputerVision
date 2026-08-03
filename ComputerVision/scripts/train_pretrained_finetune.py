@@ -20,22 +20,13 @@ from data.dataset import INaturalistSubset
 NUM_CLASSES = 500
 IMAGE_SIZE = 128
 BATCH_SIZE = 16
-# The following hyperparameters are set for fine-tuning the model, but changed for the next stage.
 EPOCHS = 3
-# LEARNING_RATE = 0.0001
-LEARNING_RATE = 0.00001
+LEARNING_RATE = 0.0001
 WEIGHT_DECAY = 0.0001
 RANDOM_SEED = 42
-# New hyperparameters for the next stage of fine-tuning.
-EARLY_STOPPING_PATIENCE = 2
 
-# START_CHECKPOINT = (
-#     PROJECT_ROOT / "checkpoints" / "pretrained_frozen_best.pth"
-# )
-
-# Continue from the best checkpoint after the first three fine-tuning epochs.
 START_CHECKPOINT = (
-    PROJECT_ROOT / "checkpoints" / "pretrained_finetuned_best.pth"
+    PROJECT_ROOT / "checkpoints" / "pretrained_frozen_best.pth"
 )
 
 
@@ -96,8 +87,7 @@ def main():
     torch.manual_seed(RANDOM_SEED)
 
     device = torch.device("cpu")
-    # print("Using CPU for fine-tuning.")
-    print("Continuing fine-tuning on CPU.")
+    print("Using CPU for fine-tuning.")
 
     if not START_CHECKPOINT.is_file():
         raise FileNotFoundError(
@@ -200,67 +190,29 @@ def main():
         weight_decay=WEIGHT_DECAY,
     )
 
-    # Added to improve learning rate
-    # Continue using the optimiser state saved after epoch 3.
-    if "optimizer_state_dict" in checkpoint:
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-
-        # The checkpoint used the old learning rate, so replace it with 1e-5.
-        for parameter_group in optimizer.param_groups:
-            parameter_group["lr"] = LEARNING_RATE
-            parameter_group["weight_decay"] = WEIGHT_DECAY
-
     checkpoint_dir = PROJECT_ROOT / "checkpoints"
     output_dir = PROJECT_ROOT / "outputs"
 
     checkpoint_dir.mkdir(exist_ok=True)
     output_dir.mkdir(exist_ok=True)
 
-    # best_checkpoint_path = (
-    #     checkpoint_dir / "pretrained_finetuned_best.pth"
-    # )
-    # final_checkpoint_path = (
-    #     checkpoint_dir / "pretrained_finetuned_final.pth"
-    # )
-    # history_path = (
-    #     output_dir / "pretrained_finetuned_history.csv"
-    # )
     best_checkpoint_path = (
-        checkpoint_dir / "pretrained_finetuned_stage2_best.pth"
+        checkpoint_dir / "pretrained_finetuned_best.pth"
     )
     final_checkpoint_path = (
-        checkpoint_dir / "pretrained_finetuned_stage2_final.pth"
+        checkpoint_dir / "pretrained_finetuned_final.pth"
     )
     history_path = (
-        output_dir / "pretrained_finetuned_stage2_history.csv"
+        output_dir / "pretrained_finetuned_history.csv"
     )
 
-    # best_val_f1 = -1.0
-    # best_epoch = 0
-    # history = []
-
-    # start_time = time.time()
-
-    # Read the starting epoch and validation result from the saved checkpoint.
-    starting_epoch = checkpoint.get("epoch", 3)
-    best_val_f1 = checkpoint.get("validation_macro_f1", 0.4180)
-
-    best_epoch = starting_epoch
-    epochs_without_improvement = 0
+    best_val_f1 = -1.0
+    best_epoch = 0
     history = []
-
-    print(
-        f"Starting from epoch {starting_epoch} "
-        f"with validation F1 {best_val_f1:.4f}."
-    )
-    print(f"Learning rate: {LEARNING_RATE}")
 
     start_time = time.time()
 
     for epoch in range(EPOCHS):
-        # The previous training ended at epoch 3, so these become epochs 4–6.
-        epoch_number = starting_epoch + epoch + 1
-
         epoch_start = time.time()
         set_finetuning_mode(model)
 
@@ -293,7 +245,7 @@ def main():
 
             if batch_num % 100 == 0:
                 print(
-                    f"Epoch {epoch_number}: "
+                    f"Epoch {epoch + 1}/{EPOCHS}: "
                     f"batch {batch_num}/{len(train_loader)}"
                 )
 
@@ -310,7 +262,7 @@ def main():
         epoch_time = time.time() - epoch_start
 
         print(
-            f"Epoch {epoch_number} finished in "
+            f"Epoch {epoch + 1}/{EPOCHS} finished in "
             f"{epoch_time:.1f}s | "
             f"train acc: {train_acc * 100:.2f}% | "
             f"val acc: {val_acc * 100:.2f}% | "
@@ -318,7 +270,7 @@ def main():
         )
 
         history.append({
-            "epoch": epoch_number,
+            "epoch": epoch + 1,
             "train_loss": train_loss,
             "train_accuracy": train_acc,
             "validation_loss": val_loss,
@@ -329,12 +281,11 @@ def main():
 
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
-            best_epoch = epoch_number
-            epochs_without_improvement = 0
+            best_epoch = epoch + 1
 
             torch.save(
                 {
-                    "epoch": epoch_number,
+                    "epoch": epoch + 1,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "validation_macro_f1": val_f1,
@@ -351,23 +302,9 @@ def main():
 
             print("Saved a new best model.")
 
-        else:
-            epochs_without_improvement += 1
-
-            print(
-                "Validation F1 did not improve "
-                f"({epochs_without_improvement}/"
-                f"{EARLY_STOPPING_PATIENCE})."
-            )
-
-            # Stop after two consecutive epochs without improvement.
-            if epochs_without_improvement >= EARLY_STOPPING_PATIENCE:
-                print("Stopping early.")
-                break
-
     torch.save(
         {
-            "epoch": starting_epoch + len(history),
+            "epoch": EPOCHS,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "number_of_classes": NUM_CLASSES,
@@ -396,21 +333,11 @@ def main():
     total_time = time.time() - start_time
 
     print(
-        f"Continued fine-tuning finished in {total_time:.1f}s. "
+        f"Fine-tuning finished in {total_time:.1f}s. "
         f"Best epoch: {best_epoch}, "
         f"best validation F1: {best_val_f1:.4f}."
     )
-
-    if best_epoch == starting_epoch:
-        print(
-            "The additional epochs did not beat the epoch-3 model. "
-            "Keep pretrained_finetuned_best.pth."
-        )
-    else:
-        print(
-            "The continued model improved. "
-            "Use pretrained_finetuned_stage2_best.pth."
-        )
+    print(f"Saved results to {checkpoint_dir} and {output_dir}.")
 
 
 if __name__ == "__main__":
