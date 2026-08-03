@@ -66,7 +66,7 @@ def encode_image(image_path, kmeans):
 
     word_ids = kmeans.predict(desc)
 
-    hist, _ = np.histogram(word_ids, bin=np.arange(VOCAB_SIZE + 1))
+    hist, _ = np.histogram(word_ids, bins=np.arange(VOCAB_SIZE + 1))
     hist = hist.astype(np.float32)
 
     norm = np.linalg.norm(hist)
@@ -111,3 +111,6 @@ def main():
     encode_split(test_rows, kmeans, "test")
 
     print("BoVW feature extraction complete.")
+
+if __name__ == "__main__":
+    main()
