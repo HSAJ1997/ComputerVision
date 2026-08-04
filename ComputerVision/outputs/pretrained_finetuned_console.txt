@@ -1,0 +1,47 @@
+Using CPU for fine-tuning.
+Loaded 20000 training images and 5000 validation images.
+Loaded the frozen model from epoch 5.
+Epoch 1/3: batch 100/1250
+Epoch 1/3: batch 200/1250
+Epoch 1/3: batch 300/1250
+Epoch 1/3: batch 400/1250
+Epoch 1/3: batch 500/1250
+Epoch 1/3: batch 600/1250
+Epoch 1/3: batch 700/1250
+Epoch 1/3: batch 800/1250
+Epoch 1/3: batch 900/1250
+Epoch 1/3: batch 1000/1250
+Epoch 1/3: batch 1100/1250
+Epoch 1/3: batch 1200/1250
+Epoch 1/3 finished in 644.2s | train acc: 48.57% | val acc: 40.86% | val F1: 0.3957
+Saved a new best model.
+Epoch 2/3: batch 100/1250
+Epoch 2/3: batch 200/1250
+Epoch 2/3: batch 300/1250
+Epoch 2/3: batch 400/1250
+Epoch 2/3: batch 500/1250
+Epoch 2/3: batch 600/1250
+Epoch 2/3: batch 700/1250
+Epoch 2/3: batch 800/1250
+Epoch 2/3: batch 900/1250
+Epoch 2/3: batch 1000/1250
+Epoch 2/3: batch 1100/1250
+Epoch 2/3: batch 1200/1250
+Epoch 2/3 finished in 612.1s | train acc: 62.03% | val acc: 42.26% | val F1: 0.4136
+Saved a new best model.
+Epoch 3/3: batch 100/1250
+Epoch 3/3: batch 200/1250
+Epoch 3/3: batch 300/1250
+Epoch 3/3: batch 400/1250
+Epoch 3/3: batch 500/1250
+Epoch 3/3: batch 600/1250
+Epoch 3/3: batch 700/1250
+Epoch 3/3: batch 800/1250
+Epoch 3/3: batch 900/1250
+Epoch 3/3: batch 1000/1250
+Epoch 3/3: batch 1100/1250
+Epoch 3/3: batch 1200/1250
+Epoch 3/3 finished in 584.6s | train acc: 69.16% | val acc: 42.88% | val F1: 0.4180
+Saved a new best model.
+Fine-tuning finished in 1843.2s. Best epoch: 3, best validation F1: 0.4180.
+Saved results to /Users/adnan/9517ass/ComputerVision-main/checkpoints and /Users/adnan/9517ass/ComputerVision-main/outputs.
