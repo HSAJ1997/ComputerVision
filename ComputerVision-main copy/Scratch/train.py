@@ -1,4 +1,6 @@
 import os
+import csv
+import time
 
 import torch
 import torch.nn as nn
@@ -14,15 +16,22 @@ from config import (
     WEIGHT_DECAY,
     CHECKPOINT_DIR,
     BEST_CHECKPOINT_PATH,
+    PROJECT_ROOT,
+    USE_AUGMENTATION,
 )
 from dataset_loading import buildDataLoaders
 from device import getDevice
 from model import buildResnet18
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
+from sklearn.metrics import f1_score  
+
+
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
+HISTORY_PATH = os.path.join(OUTPUT_DIR, "scratch_history_noaug.csv")
+PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, "scratch_test_predictions_noaug.csv")
+
 def setSeed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
@@ -59,13 +68,19 @@ def trainOneEpoch(model, loader, lossFunction, optimizer, device):
 
 # Runs one full pass over the validation data without changing any
 # weights. Used after every training epoch to check how well the
-# model generalizes to images it was not trained on.
+# model generalizes to images it was not trained on. Also collects all
+# labels and predictions so macro-averaged F1 can be computed across
+
+# the 500 classes.
 def validateOneEpoch(model, loader, lossFunction, device):
     model.eval()
 
     totalLoss = 0.0
     correctCount = 0
     totalCount = 0
+
+    allLabels = []
+    allPredictions = []
 
     with torch.no_grad():
         for images, labels in loader:
@@ -80,9 +95,13 @@ def validateOneEpoch(model, loader, lossFunction, device):
             correctCount = correctCount + (predictions == labels).sum().item()
             totalCount = totalCount + images.size(0)
 
+            allLabels.extend(labels.cpu().tolist())
+            allPredictions.extend(predictions.cpu().tolist())
+
     averageLoss = totalLoss / totalCount
     accuracy = correctCount / totalCount
-    return averageLoss, accuracy
+    macroF1 = f1_score(allLabels, allPredictions, average="macro", zero_division=0)
+    return averageLoss, accuracy, macroF1
 
 
 if __name__ == "__main__":
@@ -91,7 +110,7 @@ if __name__ == "__main__":
     print("using device:", device)
 
     trainLoader, validationLoader, testLoader, trainDataset, validationDataset, testDataset = buildDataLoaders(
-        batchSize=BATCH_SIZE, numWorkers=NUM_WORKERS
+        batchSize=BATCH_SIZE, numWorkers=NUM_WORKERS, useAugmentation=USE_AUGMENTATION
     )
 
     model = buildResnet18(NUM_CLASSES)
@@ -105,24 +124,73 @@ if __name__ == "__main__":
     scheduler = CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
-    bestValidationAccuracy = 0.0
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    bestValidationF1 = -1.0
+
+    # Record
+    history = []
+    trainingStartTime = time.time()
 
     epoch = 1
     while epoch <= NUM_EPOCHS:
+        epochStartTime = time.time()
+
         trainLoss, trainAccuracy = trainOneEpoch(model, trainLoader, lossFunction, optimizer, device)
-        validationLoss, validationAccuracy = validateOneEpoch(model, validationLoader, lossFunction, device)
+        validationLoss, validationAccuracy, validationMacroF1  = validateOneEpoch(model, validationLoader, lossFunction, device)
+
+        epochSeconds = time.time() - epochStartTime
 
         print("epoch", epoch, "of", NUM_EPOCHS)
         print("  train loss:", trainLoss, "train accuracy:", trainAccuracy)
         print("  validation loss:", validationLoss, "validation accuracy:", validationAccuracy)
+        print("  validation macro-F1:", validationMacroF1)
+        print("  epoch seconds:", epochSeconds)
 
-        if validationAccuracy > bestValidationAccuracy:
-            bestValidationAccuracy = validationAccuracy
-            torch.save(model.state_dict(), BEST_CHECKPOINT_PATH)
-            print("  saved new best checkpoint")
+        history.append({
+            "epoch": epoch,
+            "train_loss": trainLoss,
+            "train_accuracy": trainAccuracy,
+            "validation_loss": validationLoss,
+            "validation_accuracy": validationAccuracy,
+            "validation_macro_f1": validationMacroF1,
+            "epoch_seconds": epochSeconds,
+        })
+
+        if validationMacroF1 > bestValidationF1:
+            bestValidationF1 = validationMacroF1
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "validation_macro_f1": validationMacroF1,
+                    "validation_accuracy": validationAccuracy,
+                    "number_of_classes": NUM_CLASSES,
+                    "image_size": 224,
+                },
+                BEST_CHECKPOINT_PATH,
+            )
+
+            print("  saved new best checkpoint (macro-F1:", validationMacroF1, ")")
 
         epoch = epoch + 1
 
         scheduler.step()   
         currentLr = scheduler.get_last_lr()[0]
-        print("  learning rate:", currentLr)
+        print("  next-epoch learning rate:", currentLr)
+    
+    totalTrainingSeconds = time.time() - trainingStartTime
+
+    # Write the history to CSV. Column names match the pretrained
+    # model's outputs/pretrained_frozen_history.csv
+    with open(HISTORY_PATH, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=history[0].keys())
+
+        writer.writeheader()
+        writer.writerows(history)
+ 
+    print("")
+    print("total training seconds:", totalTrainingSeconds)
+    print("best validation macro-F1:", bestValidationF1)
+    print("history saved to:", HISTORY_PATH)

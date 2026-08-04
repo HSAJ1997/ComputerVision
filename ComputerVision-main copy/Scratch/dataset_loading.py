@@ -1,6 +1,10 @@
 import csv
 import os
 
+from config import (
+    USE_AUGMENTATION
+)
+
 from PIL import Image, ImageFile
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
@@ -96,8 +100,8 @@ def buildEvalTransform():
 
 # Builds the three datasets and their DataLoaders. The train split uses
 # the augmented transform; validation and test use the deterministic one.
-def buildDataLoaders(batchSize=32, numWorkers=2):
-    trainTransform = buildTrainTransform(True)
+def buildDataLoaders(batchSize=32, numWorkers=2, useAugmentation=True):
+    trainTransform = buildTrainTransform(useAugmentation)
     evalTransform = buildEvalTransform()
 
     trainDataset = INaturalistDataset(trainCsvPath, projectRoot, trainTransform)
