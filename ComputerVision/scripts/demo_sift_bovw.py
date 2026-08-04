@@ -24,7 +24,6 @@ def show_raw_image(image_path):
     plt.title("Raw Image")
     plt.imshow(img_rgb)
     plt.axis("off")
-    plt.show()
 
     return img
 
@@ -46,7 +45,6 @@ def show_sift_keypoints(image_path):
     plt.title("SIFT Keypoints")
     plt.imshow(img_rgb)
     plt.axis("off")
-    plt.show()
 
 def show_bovw_encoding(image_path, kmeans):
     img = cv2.imread(str(image_path))
@@ -69,7 +67,6 @@ def show_bovw_encoding(image_path, kmeans):
     plt.plot(hist[:100])
     plt.xlabel("Visual Word Index")
     plt.ylabel("Normalized Frequency")
-    plt.show()
 
     return hist
 
@@ -87,6 +84,7 @@ def main():
     print("Vocabulary loaded. Shape:", kmeans.cluster_centers_.shape)
 
     hist = show_bovw_encoding(img_path, kmeans)
+    plt.show()
 
 if __name__ == "__main__":
     main()

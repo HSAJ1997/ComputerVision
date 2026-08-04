@@ -38,7 +38,7 @@ def extract_sift_descriptors(image_path):
 def build_vocabulary(train_rows):
     all_desc = []
 
-    print("Collecting SIFT descriptors from training images")
+    print("Collecting SIFT descriptors from training images...")
 
     for row in train_rows:
         image_path = PROJECT_ROOT / row["image_path"]
@@ -47,17 +47,22 @@ def build_vocabulary(train_rows):
         if desc.shape[0] > 0:
             all_desc.append(desc)
 
-        all_desc = np.vstack(all_desc)
-        print(f"Total descriptors collected: {all_desc.shape[0]}")
+    # Stack AFTER the loop
+    all_desc = np.vstack(all_desc)
+    print(f"Total descriptors collected: {all_desc.shape[0]}")
 
-        print("Running k-means...")
-        kmeans = MiniBatchKMeans(n_clusters=VOCAB_SIZE, batch_size=1000, random_state=RANDOM_SEED)
-        kmeans.fit(all_desc)
+    print("Running k-means on all descriptors...")
+    kmeans = MiniBatchKMeans(
+        n_clusters=VOCAB_SIZE,
+        batch_size=1000,
+        random_state=RANDOM_SEED
+    )
+    kmeans.fit(all_desc)
 
-        joblib.dump(kmeans, PROJECT_ROOT / "bovw_kmeans.pkl")
-        print("Vocabulary saved to bovw_kmeans.pkl")
+    joblib.dump(kmeans, PROJECT_ROOT / "bovw_kmeans.pkl")
+    print("Vocabulary saved to bovw_kmeans.pkl")
 
-        return kmeans
+    return kmeans
 
 def encode_image(image_path, kmeans):
     desc = extract_sift_descriptors(image_path)
