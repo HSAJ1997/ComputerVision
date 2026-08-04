@@ -1,9 +1,19 @@
 import csv
 import os
 
-from PIL import Image
+from PIL import Image, ImageFile
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+###########################################################################################
+##################################### DATASET SETTINGS ####################################
+###########################################################################################
+
+# For dataset training
+NORMALIZE_MEAN = [0.485, 0.456, 0.406]
+NORMALIZE_STD = [0.229, 0.224, 0.225]
 
 # Folder that contains "splits/" and "subset/" (one level above this script).
 scriptFolder = os.path.dirname(os.path.abspath(__file__))
@@ -51,26 +61,48 @@ class INaturalistDataset(Dataset):
 
         return image, classIndex
 
-
-# The transform used for now: resize every image to the same fixed size
-# and convert it to a tensor. This is only the minimum needed to load
-# a batch. Proper preprocessing/augmentation comes in the next step.
-def buildBasicTransform():
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-    ])
+# Training transform: If useAugmentation is True, it randomly varies each
+# image every time it is loaded, so the model sees a slightly different
+# version each epoch avoid overfitting.
+def buildTrainTransform(useAugmentation=True):
+    if useAugmentation:
+        transform = transforms.Compose([
+            transforms.RandomResizedCrop(224, scale=(0.5, 1.0)),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=NORMALIZE_MEAN, std=NORMALIZE_STD),
+        ])
+    else:
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=NORMALIZE_MEAN, std=NORMALIZE_STD),
+        ])
     return transform
 
 
-# Builds the three datasets and their DataLoaders using the same
-# transform, so every split is preprocessed the same way.
-def buildDataLoaders(batchSize=32, numWorkers=2):
-    transform = buildBasicTransform()
+# Evaluation transform: for validation and test. The whole idea is to be fully deterministic:
+# the same image always produces the same tensor, so measured accuracy
+# reflects the model, not random cropping/jitter. Uses the same
+# normalization as training so the inputs match what the model expects.
+def buildEvalTransform():
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=NORMALIZE_MEAN, std=NORMALIZE_STD),
+    ])
+    return transform
 
-    trainDataset = INaturalistDataset(trainCsvPath, projectRoot, transform)
-    validationDataset = INaturalistDataset(validationCsvPath, projectRoot, transform)
-    testDataset = INaturalistDataset(testCsvPath, projectRoot, transform)
+# Builds the three datasets and their DataLoaders. The train split uses
+# the augmented transform; validation and test use the deterministic one.
+def buildDataLoaders(batchSize=32, numWorkers=2):
+    trainTransform = buildTrainTransform(True)
+    evalTransform = buildEvalTransform()
+
+    trainDataset = INaturalistDataset(trainCsvPath, projectRoot, trainTransform)
+    validationDataset = INaturalistDataset(validationCsvPath, projectRoot, evalTransform)
+    testDataset = INaturalistDataset(testCsvPath, projectRoot, evalTransform)
 
     trainLoader = DataLoader(
         trainDataset, batch_size=batchSize, shuffle=True, num_workers=numWorkers

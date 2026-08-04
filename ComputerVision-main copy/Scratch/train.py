@@ -18,7 +18,13 @@ from config import (
 from dataset_loading import buildDataLoaders
 from device import getDevice
 from model import buildResnet18
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
+def setSeed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 # Runs one full pass over the training data. For every batch it makes
 # a prediction, measures how wrong it was, and updates the model's
@@ -80,6 +86,7 @@ def validateOneEpoch(model, loader, lossFunction, device):
 
 
 if __name__ == "__main__":
+    setSeed(42)
     device = getDevice()
     print("using device:", device)
 
@@ -94,6 +101,8 @@ if __name__ == "__main__":
     optimizer = optim.SGD(
         model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY
     )
+
+    scheduler = CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     bestValidationAccuracy = 0.0
@@ -113,3 +122,7 @@ if __name__ == "__main__":
             print("  saved new best checkpoint")
 
         epoch = epoch + 1
+
+        scheduler.step()   
+        currentLr = scheduler.get_last_lr()[0]
+        print("  learning rate:", currentLr)
