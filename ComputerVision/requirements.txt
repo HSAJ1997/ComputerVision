@@ -5,3 +5,5 @@ matplotlib
 pandas
 scikit-learn
 numpy
+joblib 
+opencv-contrib-python
