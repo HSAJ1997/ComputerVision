@@ -11,3 +11,6 @@ def getDevice():
     if torch.backends.mps.is_available():
         return "mps"
     return "cpu"
+
+if __name__ == "__main__":
+    print(getDevice())
