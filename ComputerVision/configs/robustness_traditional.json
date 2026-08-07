@@ -1,0 +1,19 @@
+{
+  "project_root": ".",
+  "test_csv": "splits/test.csv",
+  "kmeans_path": "bovw_kmeans.pkl",
+  "svm_model_path": "outputs/traditional/svm_model.pkl",
+  "clean_features_path": "bovw_test_features.npy",
+  "clean_labels_path": "bovw_test_labels.npy",
+  "seed": 42,
+  "include_clean": true,
+  "max_samples": null,
+  "degradations": {
+    "gaussian_noise": [1, 2, 3, 4, 5],
+    "gaussian_blur": [1, 2, 3, 4, 5],
+    "motion_blur": [1, 2, 3, 4, 5],
+    "jpeg_compression": [1, 2, 3, 4, 5]
+  },
+  "results_csv": "outputs/robustness/robustness_results.csv",
+  "figures_dir": "outputs/robustness/figures"
+}

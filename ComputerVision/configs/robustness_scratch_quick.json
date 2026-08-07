@@ -1,0 +1,19 @@
+{
+  "project_root": ".",
+  "test_csv": "splits/test.csv",
+  "selected_classes_json": "splits/selected_classes.json",
+  "preprocess_mode": "resize_square",
+  "image_size": 224,
+  "resize_size": 224,
+  "batch_size": 32,
+  "num_workers": 0,
+  "max_samples": 100,
+  "seed": 42,
+  "amp": true,
+  "include_clean": true,
+  "degradations": {
+    "gaussian_noise": [1]
+  },
+  "results_csv": "outputs/robustness_quick_scratch/robustness_results.csv",
+  "figures_dir": "outputs/robustness_quick_scratch/figures"
+}

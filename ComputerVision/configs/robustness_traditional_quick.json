@@ -1,0 +1,16 @@
+{
+  "project_root": ".",
+  "test_csv": "splits/test.csv",
+  "kmeans_path": "bovw_kmeans.pkl",
+  "svm_model_path": "outputs/traditional/svm_model.pkl",
+  "clean_features_path": "bovw_test_features.npy",
+  "clean_labels_path": "bovw_test_labels.npy",
+  "seed": 42,
+  "include_clean": true,
+  "max_samples": 20,
+  "degradations": {
+    "gaussian_noise": [1]
+  },
+  "results_csv": "outputs/robustness_quick_traditional/robustness_results.csv",
+  "figures_dir": "outputs/robustness_quick_traditional/figures"
+}

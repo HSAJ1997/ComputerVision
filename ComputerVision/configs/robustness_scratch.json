@@ -1,0 +1,21 @@
+{
+  "project_root": ".",
+  "test_csv": "splits/test.csv",
+  "selected_classes_json": "splits/selected_classes.json",
+  "preprocess_mode": "resize_square",
+  "image_size": 224,
+  "resize_size": 224,
+  "batch_size": 64,
+  "num_workers": 0,
+  "seed": 42,
+  "amp": true,
+  "include_clean": true,
+  "degradations": {
+    "gaussian_noise": [1, 2, 3, 4, 5],
+    "gaussian_blur": [1, 2, 3, 4, 5],
+    "motion_blur": [1, 2, 3, 4, 5],
+    "jpeg_compression": [1, 2, 3, 4, 5]
+  },
+  "results_csv": "outputs/robustness/robustness_results.csv",
+  "figures_dir": "outputs/robustness/figures"
+}
