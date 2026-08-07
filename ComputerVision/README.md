@@ -109,7 +109,7 @@ ComputerVision/
 │
 ├── checkpoints/
 │   ├── pretrained_finetuned_best_aug_step.pth
-│   └── resnet18_scratch_resumed_best_aug_step.pth
+│   └── resnet18_scratch_best.pth
 │
 ├── bovw_kmeans.pkl
 ├── bovw_test_features.npy
@@ -169,9 +169,9 @@ The scratch model uses direct resizing to `224 × 224`.
 
 ```powershell
 python scripts/run_robustness.py `
-  --checkpoint checkpoints/resnet18_scratch_resumed_best_aug_step.pth `
+  --checkpoint checkpoints/resnet18_scratch_best.pth `
   --model-type scratch `
-  --model-label scratch_resnet18_resumed `
+  --model-label scratch_resnet18 `
   --config configs/robustness_scratch_quick.json
 ```
 
@@ -179,9 +179,9 @@ python scripts/run_robustness.py `
 
 ```powershell
 python scripts/run_robustness.py `
-  --checkpoint checkpoints/resnet18_scratch_resumed_best_aug_step.pth `
+  --checkpoint checkpoints/resnet18_scratch_best.pth `
   --model-type scratch `
-  --model-label scratch_resnet18_resumed `
+  --model-label scratch_resnet18 `
   --config configs/robustness_scratch.json
 ```
 
