@@ -18,7 +18,9 @@ from gradcam import generateHeatmap
 from visualize import saveOverlay
 
 NUM_CLASSES = 500
-NUM_IMAGES_TO_EXPLAIN = 8
+NUM_CORRECT_TO_SAVE = 4
+NUM_INCORRECT_TO_SAVE = 4
+MAX_IMAGES_TO_SCAN = 500
 
 CHECKPOINT_PATH = os.path.join(PROJECT_ROOT, "checkpoints", "pretrained_finetuned_best_aug_step.pth")
 CLASS_FILE = os.path.join(PROJECT_ROOT, "splits", "selected_classes.json")
@@ -52,7 +54,10 @@ if __name__ == "__main__":
     device = getDevice()
     print("using device:", device)
 
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    correctDir = os.path.join(OUTPUT_DIR, "correct")
+    incorrectDir = os.path.join(OUTPUT_DIR, "incorrect")
+    os.makedirs(correctDir, exist_ok=True)
+    os.makedirs(incorrectDir, exist_ok=True)
 
     model = loadPretrainedModel(device)
     model.eval()
@@ -65,27 +70,46 @@ if __name__ == "__main__":
 
     targetLayer = model.layer4
 
-    imageIndex = 0
+    correctSaved = 0
+    incorrectSaved = 0
+    imagesScanned = 0
+
     for images, labels in testLoader:
-        if imageIndex >= NUM_IMAGES_TO_EXPLAIN:
+        imagesScanned = imagesScanned + 1
+        if imagesScanned > MAX_IMAGES_TO_SCAN:
+            break
+        if correctSaved >= NUM_CORRECT_TO_SAVE and incorrectSaved >= NUM_INCORRECT_TO_SAVE:
             break
 
         images = images.to(device)
         trueClassIndex = int(labels[0].item())
 
         heatmap, predictedClassIndex = generateHeatmap(model, targetLayer, images, None)
+        correct = predictedClassIndex == trueClassIndex
+
+        if correct and correctSaved >= NUM_CORRECT_TO_SAVE:
+            continue
+        if not correct and incorrectSaved >= NUM_INCORRECT_TO_SAVE:
+            continue
 
         trueName = speciesNames[trueClassIndex]
         predictedName = speciesNames[predictedClassIndex]
-        correct = predictedClassIndex == trueClassIndex
 
-        outputPath = os.path.join(OUTPUT_DIR, "test_image_" + str(imageIndex) + ".png")
+        if correct:
+            outputPath = os.path.join(correctDir, "correct_" + str(correctSaved) + ".png")
+            correctSaved = correctSaved + 1
+        else:
+            outputPath = os.path.join(incorrectDir, "incorrect_" + str(incorrectSaved) + ".png")
+            incorrectSaved = incorrectSaved + 1
+
         saveOverlay(images, heatmap, NORMALIZE_MEAN, NORMALIZE_STD, outputPath, 0.4)
 
-        print("image", imageIndex)
-        print("  true species:", trueName)
+        print("true species:", trueName)
         print("  predicted species:", predictedName)
         print("  correct:", correct)
         print("  saved to:", outputPath)
 
-        imageIndex = imageIndex + 1
+    print("")
+    print("correct examples saved:", correctSaved)
+    print("incorrect examples saved:", incorrectSaved)
+    print("images scanned:", imagesScanned)
