@@ -1,2 +1,0 @@
-Evaluating epoch 13 on 5000 test images.
-Top-1: 59.84% | Top-5: 81.44% | Macro-F1: 0.5944

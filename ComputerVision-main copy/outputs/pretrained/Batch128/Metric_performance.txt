@@ -1,3 +1,0 @@
-Evaluating epoch 14 on 5000 test images.
-Processed batch 100/157
-Top-1: 59.82% | Top-5: 81.86% | Macro-F1: 0.5947

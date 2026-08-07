@@ -1,3 +1,0 @@
-experiment,best_epoch,best_validation_accuracy,best_validation_macro_f1,training_seconds
-Frozen backbone,5,0.3522,0.3449658802956341,3179.6174097061157
-Fine-tuned layer4 + fc,6,0.4534,0.4435998500097541,3700.2071990966797

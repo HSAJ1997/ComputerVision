@@ -1,3 +1,0 @@
-Evaluating epoch 35 on 5000 test images.
-Processed batch 100/157
-Top-1: 61.40% | Top-5: 81.16% | Macro-F1: 0.6090
