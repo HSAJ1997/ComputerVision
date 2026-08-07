@@ -1,0 +1,21 @@
+{
+  "checkpoint": "pretrained_finetuned_aug_step_batch128_best.pth",
+  "checkpoint_epoch": 14,
+  "validation_macro_f1_used_for_selection": 0.5989150105993974,
+  "number_of_test_images": 5000,
+  "number_of_classes": 500,
+  "top1_accuracy": 0.5982,
+  "top5_accuracy": 0.8186,
+  "overall_accuracy": 0.5982,
+  "balanced_accuracy": 0.5982000000000001,
+  "macro_precision": 0.6123447131300073,
+  "macro_recall": 0.5982000000000001,
+  "macro_f1": 0.5947247461126839,
+  "forward_inference_seconds": 85.07638269849122,
+  "end_to_end_test_seconds": 92.53716939990409,
+  "mean_forward_milliseconds_per_image": 17.015276539698245,
+  "forward_images_per_second": 58.770716871213104,
+  "batch_size": 32,
+  "image_size": 224,
+  "device": "cpu"
+}

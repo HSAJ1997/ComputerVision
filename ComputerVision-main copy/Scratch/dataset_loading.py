@@ -2,7 +2,10 @@ import csv
 import os
 
 from config import (
-    USE_AUGMENTATION
+    USE_AUGMENTATION,
+    NORMALIZE_MEAN,
+    NORMALIZE_STD,
+    IMAGE_SIZE
 )
 
 from PIL import Image, ImageFile
@@ -10,14 +13,6 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-
-###########################################################################################
-##################################### DATASET SETTINGS ####################################
-###########################################################################################
-
-# For dataset training
-NORMALIZE_MEAN = [0.485, 0.456, 0.406]
-NORMALIZE_STD = [0.229, 0.224, 0.225]
 
 # Folder that contains "splits/" and "subset/" (one level above this script).
 scriptFolder = os.path.dirname(os.path.abspath(__file__))
@@ -71,7 +66,7 @@ class INaturalistDataset(Dataset):
 def buildTrainTransform(useAugmentation=True):
     if useAugmentation:
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(224, scale=(0.5, 1.0)),
+            transforms.RandomResizedCrop((IMAGE_SIZE, IMAGE_SIZE), scale=(0.7, 1.0)),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
             transforms.ToTensor(),
@@ -79,7 +74,7 @@ def buildTrainTransform(useAugmentation=True):
         ])
     else:
         transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.ToTensor(),
             transforms.Normalize(mean=NORMALIZE_MEAN, std=NORMALIZE_STD),
         ])
@@ -92,7 +87,7 @@ def buildTrainTransform(useAugmentation=True):
 # normalization as training so the inputs match what the model expects.
 def buildEvalTransform():
     transform = transforms.Compose([
-        transforms.Resize((224, 224)),
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize(mean=NORMALIZE_MEAN, std=NORMALIZE_STD),
     ])

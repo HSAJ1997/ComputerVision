@@ -28,8 +28,7 @@ from sklearn.metrics import f1_score
 
 
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
-HISTORY_PATH = os.path.join(OUTPUT_DIR, "scratch_history_noaug_nostep.csv")
-PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, "scratch_test_predictions_noaug.csv")
+HISTORY_PATH = os.path.join(OUTPUT_DIR, "scratch_history_baseline_adam_optimizer.csv")
 
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
@@ -120,11 +119,11 @@ if __name__ == "__main__":
     model = model.to(device)
 
     lossFunction = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(
-        model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY
+    optimizer = optim.Adam(
+        model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
 
-    # scheduler = CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
+    scheduler = CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -180,9 +179,9 @@ if __name__ == "__main__":
 
         epoch = epoch + 1
 
-        # scheduler.step()   
-        # currentLr = scheduler.get_last_lr()[0]
-        # print("  next-epoch learning rate:", currentLr)
+        scheduler.step()   
+        currentLr = scheduler.get_last_lr()[0]
+        print("  next-epoch learning rate:", currentLr)
     
     totalTrainingSeconds = time.time() - trainingStartTime
 

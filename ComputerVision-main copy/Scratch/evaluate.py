@@ -18,8 +18,7 @@ from device import getDevice
 from model import buildResnet18
 
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
-HISTORY_PATH = os.path.join(OUTPUT_DIR, "scratch_history_noaug_nostep.csv")
-PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, "scratch_test_predictions_noaug_nostep.csv")
+PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, "scratch_test_predictions_aug_step.csv")
 
 # Runs the trained model once over the test set. For every image it records
 # the true label, the top-1 prediction, and the five highest-scoring class

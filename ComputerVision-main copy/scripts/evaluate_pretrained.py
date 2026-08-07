@@ -31,7 +31,7 @@ IMAGE_SIZE = 224
 BATCH_SIZE = 32
 
 CHECKPOINT_PATH = (
-    PROJECT_ROOT / "checkpoints" / "pretrained_finetuned_best.pth"
+    PROJECT_ROOT / "checkpoints" / "pretrained_finetuned_aug_step_best_adam.pth"
 )
 TEST_CSV = PROJECT_ROOT / "splits" / "test.csv"
 CLASS_FILE = PROJECT_ROOT / "splits" / "selected_classes.json"
@@ -306,21 +306,21 @@ def main():
         "device": str(device),
     }
 
-    metrics_path = OUTPUT_DIR / "pretrained_test_metrics.json"
+    metrics_path = OUTPUT_DIR / "pretrained_aug_step_adam_test_metrics.json"
     predictions_path = (
-        OUTPUT_DIR / "pretrained_test_predictions.csv"
+        OUTPUT_DIR / "pretrained_aug_step_adam_test_predictions.csv"
     )
     per_class_path = (
-        OUTPUT_DIR / "pretrained_per_class_metrics.csv"
+        OUTPUT_DIR / "pretrained_aug_step_adam_per_class_metrics.csv"
     )
     matrix_csv_path = (
-        OUTPUT_DIR / "pretrained_confusion_matrix.csv"
+        OUTPUT_DIR / "pretrained_aug_step_adam_confusion_matrix.csv"
     )
     matrix_image_path = (
-        OUTPUT_DIR / "pretrained_confusion_matrix.png"
+        OUTPUT_DIR / "pretrained_aug_step_adam_confusion_matrix.png"
     )
     confusions_path = (
-        OUTPUT_DIR / "pretrained_common_confusions.csv"
+        OUTPUT_DIR / "pretrained_aug_step_adam_common_confusions.csv"
     )
 
     with metrics_path.open("w", encoding="utf-8") as file:
@@ -441,13 +441,13 @@ def main():
 
     save_example_grid(
         correct_examples,
-        OUTPUT_DIR / "pretrained_correct_examples.png",
+        OUTPUT_DIR / "pretrained_aug_correct_examples.png",
         "Correct test predictions",
         PROJECT_ROOT,
     )
     save_example_grid(
         incorrect_examples,
-        OUTPUT_DIR / "pretrained_incorrect_examples.png",
+        OUTPUT_DIR / "pretrained_aug_incorrect_examples.png",
         "High-confidence incorrect test predictions",
         PROJECT_ROOT,
     )

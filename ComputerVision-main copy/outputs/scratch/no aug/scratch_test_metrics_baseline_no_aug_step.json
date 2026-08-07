@@ -1,0 +1,16 @@
+{
+  "checkpoint": "resnet18_scratch_baseline_no_aug.pth",
+  "checkpoint_epoch": 26,
+  "number_of_test_images": 5000,
+  "number_of_classes": 500,
+  "top1_accuracy": 0.1924,
+  "top5_accuracy": 0.4128,
+  "macro_precision": 0.1974407359015254,
+  "macro_recall": 0.19240000000000002,
+  "macro_f1": 0.1871602464802965,
+  "test_inference_seconds": 13.532719373703003,
+  "mean_milliseconds_per_image": 2.7065438747406008,
+  "images_per_second": 369.4748898522259,
+  "batch_size": 32,
+  "device": "cuda"
+}

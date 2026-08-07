@@ -1,0 +1,7 @@
+test images: 5000
+top-1 accuracy: 0.363
+top-5 accuracy: 0.6172
+macro precision: 0.3696755011268775
+macro recall: 0.363
+macro F1: 0.3555507775148293
+test inference seconds: 18.057523012161255

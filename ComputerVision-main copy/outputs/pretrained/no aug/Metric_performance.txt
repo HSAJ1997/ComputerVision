@@ -1,0 +1,2 @@
+Evaluating epoch 15 on 5000 test images.
+Top-1: 58.42% | Top-5: 79.66% | Macro-F1: 0.5781
