@@ -2,10 +2,7 @@ import torch
 import torch.nn as nn
 
 
-# One residual block used by ResNet-18: two 3x3 convolutions with a
-# skip connection added back onto the output. If the input and output
-# shapes don't match (different channel count or stride), the skip
-# connection is passed through a 1x1 conv first so the shapes line up.
+# Two 3x3 convs plus a skip connection back onto the output.
 class BasicBlock(nn.Module):
     def __init__(self, inChannels, outChannels, stride):
         super().__init__()
@@ -23,8 +20,7 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(outChannels),
             )
 
-    # Runs one block: conv, bn, relu, conv, bn, then adds the
-    # (possibly reshaped) input back before the final relu.
+    # conv, bn, relu, conv, bn, add input, relu.
     def forward(self, x):
         identity = x
         if self.shortcut is not None:
@@ -41,10 +37,7 @@ class BasicBlock(nn.Module):
         return out
 
 
-# Builds one stage of the network: a sequence of BasicBlocks that all
-# share the same output channel count. Only the first block in a stage
-# changes the spatial size (via stride) or channel count; the rest
-# keep the shape the same.
+# A stack of BasicBlocks; only the first one changes shape.
 def makeStage(inChannels, outChannels, numBlocks, stride):
     blocks = []
     blocks.append(BasicBlock(inChannels, outChannels, stride))
@@ -57,10 +50,7 @@ def makeStage(inChannels, outChannels, numBlocks, stride):
     return nn.Sequential(*blocks)
 
 
-# The full ResNet-18 network: a stem that shrinks the raw image, four
-# stages of BasicBlocks that build up features while shrinking the
-# spatial size further, then a global average pool and a single
-# linear layer that outputs one score per class.
+# Stem, four stages of BasicBlocks, pool, then a linear classifier.
 class ResNet18(nn.Module):
     def __init__(self, numClasses):
         super().__init__()
@@ -80,8 +70,7 @@ class ResNet18(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, numClasses)
 
-    # Passes a batch of images through the stem, the four stages, the
-    # pooling layer, and finally the classifier to get class scores.
+    # stem -> stages -> pool -> classifier.
     def forward(self, x):
         x = self.stem(x)
 
@@ -96,7 +85,6 @@ class ResNet18(nn.Module):
         return x
 
 
-# Creates a ready-to-use ResNet-18 model for the given number of
-# output classes.
+# Factory for a ResNet-18 with the given number of output classes.
 def buildResnet18(numClasses):
     return ResNet18(numClasses)

@@ -22,6 +22,9 @@ ComputerVision-main copy/subset/
 ComputerVision-main copy/checkpoints/
 ComputerVision-main copy/Scratch/checkpoints/
 
+# Grad-CAM output images (generated, and excluded from the code submission per spec)
+ComputerVision-main copy/GradCAM/outputs/
+
 # OS / editor
 .DS_Store
 Thumbs.db
