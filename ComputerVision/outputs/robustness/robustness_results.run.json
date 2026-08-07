@@ -1,0 +1,17 @@
+{
+  "model": "pretrained_resnet18_aug",
+  "checkpoint": "C:\\Users\\10246\\Downloads\\ComputerVision_robustness_ready\\ComputerVision\\checkpoints\\pretrained_finetuned_best_aug_step.pth",
+  "test_csv": "C:\\Users\\10246\\Downloads\\ComputerVision_robustness_ready\\ComputerVision\\splits\\test.csv",
+  "selected_classes_json": "C:\\Users\\10246\\Downloads\\ComputerVision_robustness_ready\\ComputerVision\\splits\\selected_classes.json",
+  "seed": 42,
+  "image_size": 224,
+  "resize_size": 256,
+  "max_samples": null,
+  "degradations": [
+    "gaussian_noise",
+    "gaussian_blur",
+    "motion_blur",
+    "jpeg_compression"
+  ],
+  "results_csv": "C:\\Users\\10246\\Downloads\\ComputerVision_robustness_ready\\ComputerVision\\outputs\\robustness\\robustness_results.csv"
+}
