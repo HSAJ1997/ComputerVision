@@ -3,8 +3,6 @@ import os
 import sys
 
 import torch
-import torch.nn as nn
-from torchvision.models import resnet18
 
 SCRIPT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_FOLDER)
@@ -14,6 +12,7 @@ sys.path.insert(0, SCRATCH_FOLDER)
 from config import NORMALIZE_MEAN, NORMALIZE_STD
 from dataset_loading import buildDataLoaders
 from device import getDevice
+from model import buildResnet18
 from selection import saveCorrectAndIncorrect
 
 NUM_CLASSES = 500
@@ -21,9 +20,9 @@ NUM_CORRECT_TO_SAVE = 4
 NUM_INCORRECT_TO_SAVE = 4
 MAX_IMAGES_TO_SCAN = 500
 
-CHECKPOINT_PATH = os.path.join(PROJECT_ROOT, "checkpoints", "pretrained_finetuned_best_aug_step.pth")
+CHECKPOINT_PATH = os.path.join(SCRATCH_FOLDER, "checkpoints", "resnet18_scratch_baseline_optimizer.pth")
 CLASS_FILE = os.path.join(PROJECT_ROOT, "splits", "selected_classes.json")
-OUTPUT_DIR = os.path.join(SCRIPT_FOLDER, "outputs", "pretrained")
+OUTPUT_DIR = os.path.join(SCRIPT_FOLDER, "outputs", "scratch")
 
 
 # Maps class_index to species_name, for labelling saved images.
@@ -38,10 +37,9 @@ def loadSpeciesNames():
     return names
 
 
-# Builds the pretrained resnet18 (500-way head) and loads the checkpoint.
-def loadPretrainedModel(device):
-    model = resnet18(weights=None)
-    model.fc = nn.Linear(model.fc.in_features, NUM_CLASSES)
+# Builds the from-scratch resnet18 and loads the checkpoint.
+def loadScratchModel(device):
+    model = buildResnet18(NUM_CLASSES)
 
     checkpoint = torch.load(CHECKPOINT_PATH, map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
@@ -53,7 +51,7 @@ if __name__ == "__main__":
     device = getDevice()
     print("using device:", device)
 
-    model = loadPretrainedModel(device)
+    model = loadScratchModel(device)
     model.eval()
 
     speciesNames = loadSpeciesNames()
@@ -62,7 +60,7 @@ if __name__ == "__main__":
         batchSize=1, numWorkers=0
     )
 
-    targetLayer = model.layer4
+    targetLayer = model.stage4
 
     saveCorrectAndIncorrect(
         model, targetLayer, testLoader, speciesNames, OUTPUT_DIR,
